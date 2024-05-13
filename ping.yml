@@ -1,0 +1,6 @@
+---
+- name: "apache installation!"
+  hosts: host
+  roles:
+   - apache
+...

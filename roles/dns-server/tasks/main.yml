@@ -1,0 +1,17 @@
+- name: "Installing named service"
+  yum:
+    name: 
+      - bind 
+      - bind-utils
+    state: latest
+- name: "changing dns config file"
+  template:
+         src: "{{dns-host-file}}"
+         dest: /etc/named.conf
+         backup: yes
+         chmod: 0640
+         user: root
+         group: named
+
+    
+

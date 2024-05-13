@@ -1,0 +1,5 @@
+- name: updating and upgrading debian 11
+  hosts: host
+  roles:
+    - jenkins 
+

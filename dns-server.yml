@@ -1,0 +1,6 @@
+---
+- name: "dns-server installation!"
+  hosts: host3
+  roles:
+   - dns-server
+...

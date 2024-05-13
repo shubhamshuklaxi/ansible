@@ -1,0 +1,18 @@
+$TTL 1D
+@       IN SOA  dns.server.local. admin.server.local. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H     ; minimum
+
+)
+;Name Server Information
+@ IN NS dns.server.local.
+dns IN A 192.168.56.181
+;Reverse Lookup for Name Server
+181 IN PTR debian.server.local.
+;PTR Record IP Address tp Hostname
+150 IN PTR www.server.local.
+160 IN PTR mail.server.local.
+

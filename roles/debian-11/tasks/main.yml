@@ -1,0 +1,50 @@
+- name: copying source file for debian11
+  template:
+    src: "{{debian11_source_file}}"
+    dest: /etc/apt/sources.list 
+- name: debian os update and upgrade
+  apt:
+    upgrade: yes
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 36000
+
+- name: installing imp pkg
+  apt:
+    name: "{{tools}}"
+    state: latest
+
+- name: installing openjdk-11-jdk
+  apt: 
+    name: 
+      - openjdk-11-jdk
+    state: latest
+    #- name: Importing jenkins GPG key
+    #apt_key:
+    #url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+    #state: present
+
+    #- name: Adding jenkins repository to sources list
+    #apt_repository:
+    #repo: 'deb http://pkg.jenkins.io/debian-stable binary/'
+    #state: present
+    #filename: 'jenkins'
+
+    #- name: Updating apt package cache
+    #apt:
+    #update_cache: yes
+
+- name: Installing Jenkins
+  apt:
+    name: jenkins
+    state: present
+- name: Creating jenkins User
+  user:
+     name: jenkins
+     state: present
+     shell: /bin/bash
+     groups: sudo
+- name: Creating jenkins group
+  group:
+      name: jenkins
+      state: present

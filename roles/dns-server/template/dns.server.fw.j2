@@ -1,0 +1,24 @@
+$TTL 1D
+@       IN SOA  dns.server.local. admin.server.local. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H      ; minimum
+)
+;Name Server infromation
+
+@ IN NS dns.server.local.
+
+;IP Address for Name Server
+
+dns IN A 192.168.56.181
+
+;Mail Server MX (Mail Exchanger) Record
+server.local. IN MX 160 mail.server.local.
+;A Record for the following Hostname
+www IN A 192.168.56.150
+mail IN A 192.168.56.160
+;CNAME Record
+ftp IN CNAME www.server.local.
+

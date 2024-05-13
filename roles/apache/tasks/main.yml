@@ -1,0 +1,19 @@
+- name: "apache and updating repository"
+  apt:
+    name: "{{apache_package}}"
+    state: present
+    update_cache: yes
+  when: ansible_distribution == "Debian"
+
+- name:
+  service:
+        name: "{{apache_service}}"
+        state: started
+- name: "changing index.html file"
+  template:
+         src: "{{apache_template_file}}"
+         dest: /var/www/html/index.html
+         owner: root
+         group: root
+         mode: 0644
+  notify: apache_restart

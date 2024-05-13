@@ -1,0 +1,71 @@
+- name: installing nagios dependecies
+  apt:
+    name: "{{nagios}}"
+    state: latest
+
+- name: starting apache2 service
+  service:
+       name: apache2
+       state: started
+
+- name: Downloading nagios
+  ansible.builtin.get_url:
+    url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.6.tar.gz
+    dest: /root/
+
+- name:
+  user: 
+    name: nagios
+    groups: 
+        - www-data
+     
+- name: Extracting nagios-4.4.6.tar.gz
+  ansible.builtin.unarchive:
+    src: /root/nagios-4.4.6.tar.gz
+    dest: /root/
+    remote_src: yes
+
+- name: Configuring nagios 
+  ansible.builtin.shell:
+    cmd: |
+      cd /root/nagios-4.4.6/
+      ./configure --with-httpd-conf=/etc/apache2/sites-enabled
+      make all
+      make install
+      make install-init
+      make install-commandmode
+      systemctl enable nagios.service
+      make install-config
+      make install-webconf
+      a2enmod cgi
+    creates: /usr/local/nagios/etc/nagios.cfg  # Adjust the path as needed
+      
+- name: Check if user exists in htpasswd file
+  ansible.builtin.shell:
+    cmd: "grep -q '^nagiosadmin:' /usr/local/nagios/etc/htpasswd.users"
+  register: user_exists
+  ignore_errors: yes  # Ignore errors because grep will fail if the user doesn't exist
+
+- name: Create user if it does not exist
+  ansible.builtin.shell:
+    cmd: "echo 'admin' | htpasswd -c -i /usr/local/nagios/etc/htpasswd.users nagiosadmin"
+  when: user_exists.rc != 0  # Execute only if the grep command failed (user not found)
+
+
+- name: restarting apache2
+  service:
+    name: apache2
+    state: restarted
+- name: starting nagios
+  service:
+    name: nagios
+    state: started
+- name: Create symbolic link if not exists
+  ansible.builtin.command:
+    cmd: "ln -s /usr/lib/nagios/plugins/check_* /usr/local/nagios/libexec/"
+    creates: "/usr/local/nagios/libexec/check_*"
+
+- name: restarting nagios
+  service:
+    name: nagios
+    state: restarted

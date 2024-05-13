@@ -1,0 +1,3 @@
+dns-host-file: /root/inventory/roles/dns-server/template/named.j2
+dns-fw: /root/inventory/roles/dns-server/template/dns.server.fw.j2
+dns-rv: /root/inventory/roles/dns-server/template/dns.server.rv.j2
