@@ -1,0 +1,4 @@
+- name: installing checkmk
+  hosts: host1
+  roles:
+     - checkmk

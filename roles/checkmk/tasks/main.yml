@@ -1,0 +1,39 @@
+- name: downloading checkmk script
+  get_url:
+       url: https://download.checkmk.com/checkmk/2.2.0p26/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb
+       dest: /tmp
+- name: installing dpkg-sig
+  apt:
+   name: dpkg-sig
+   state: latest
+
+- name: downloading repo key for checkmk
+  get_url:
+       url: https://download.checkmk.com/checkmk/Check_MK-pubkey.gpg
+       dest: /tmp
+- name: importing checkmk key
+  command:
+       cmd: "gpg --import Check_MK-pubkey.gpg"
+       creates: /tmp/Check_MK-pubkey.gpg
+
+- name: verifying pakage
+  command:
+       cmd: "dpkg-sig --verify check-mk-raw-2.2.0p26_0.bullseye_amd64.deb"
+       creates: /tmp/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb
+
+- name: installing checkmk
+  command:
+       cmd: "apt install /tmp/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb -y"
+
+- name: omd create monitoring
+  command:
+       cmd: "omd create monitoring"
+
+
+- name: omd start monitoring
+  command:
+       cmd: "omd start monitoring"
+
+
+
+
