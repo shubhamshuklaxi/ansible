@@ -1,16 +1,30 @@
-- name: downloading checkmk script
+- name: Downloading check-mk-raw-2.2.0p26_0.bullseye_amd64.deb, Check if file exists
+  stat:
+    path: "/tmp/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb"
+  register: file_stat
+
+- name: Download file if it doesn't exist
   get_url:
-       url: https://download.checkmk.com/checkmk/2.2.0p26/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb
-       dest: /tmp
+    url: https://download.checkmk.com/checkmk/2.2.0p26/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb
+    dest: "/tmp/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb"
+  when: not file_stat.stat.exists
+
 - name: installing dpkg-sig
   apt:
    name: dpkg-sig
    state: latest
 
-- name: downloading repo key for checkmk
+- name: Downloading Check_MK-pubkey.gpg, Check if file exists
+  stat:
+    path: "/tmp/Check_MK-pubkey.gpg"
+  register: file_stat
+
+- name: Download file if it doesn't exist
   get_url:
-       url: https://download.checkmk.com/checkmk/Check_MK-pubkey.gpg
-       dest: /tmp
+    url: https://download.checkmk.com/checkmk/Check_MK-pubkey.gpg
+    dest: "/tmp/Check_MK-pubkey.gpg"
+  when: not file_stat.stat.exists
+
 - name: importing checkmk key
   command:
        cmd: "gpg --import Check_MK-pubkey.gpg"
@@ -25,15 +39,36 @@
   command:
        cmd: "apt install /tmp/check-mk-raw-2.2.0p26_0.bullseye_amd64.deb -y"
 
-- name: omd create monitoring
-  command:
-       cmd: "omd create monitoring"
+- name: Create OMD monitoring site if it doesn't exist
+  command: omd create monitoring
+  args:
+    creates: /omd/sites/monitoring/etc/nagios/nagios.cfg
+  ignore_errors: yes
 
 
-- name: omd start monitoring
-  command:
-       cmd: "omd start monitoring"
+- name: Check if monitoring site is running
+  command: omd status monitoring
+  register: site_status
+  ignore_errors: true
+
+- name: Start OMD monitoring site if it's not already running
+  command: omd start monitoring
+  when: "'Overall state:  running' not in site_status.stdout"
+
+- name: Check if OMD site is already running
+  ansible.builtin.shell:
+    cmd: "omd status mysite"
+  register: site_status
+  ignore_errors: true
+
+- name: Start OMD site if it's not already running
+  ansible.builtin.shell:
+    cmd: "omd start mysite"
+  when: "'Overall state:  running' not in site_status.stdout_lines"
 
 
-
+- name: Configuring nagios
+  ansible.builtin.shell:
+    cmd: |
+      su - mysite -c 'echo "admin" | cmk-passwd --stdin cmkadmin'
 
