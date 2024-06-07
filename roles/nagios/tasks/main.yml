@@ -60,9 +60,15 @@
   service:
     name: nagios
     state: started
+
+- name: installing nagios plugins
+  apt:
+    name: nagios-plugins
+    state: absent
+
 - name: Create symbolic link if not exists
   ansible.builtin.command:
-    cmd: "ln -s /usr/lib/nagios/plugins/check_* /usr/local/nagios/libexec/"
+    cmd: "find /usr/lib/nagios/plugins/ -type f -exec cp {} /usr/local/nagios/libexec/ \\;"
     creates: "/usr/local/nagios/libexec/check_*"
 
 - name: restarting nagios

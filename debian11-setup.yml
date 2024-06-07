@@ -1,0 +1,5 @@
+- name: adding deb repo
+  hosts: host3
+  roles:
+     - deb11-repo
+  

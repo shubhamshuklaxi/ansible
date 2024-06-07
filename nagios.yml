@@ -1,4 +1,5 @@
 - name: installing nagios
-  hosts: host1
-  roles:
+  hosts: host
+  roles:          
      - nagios
+     - fasts

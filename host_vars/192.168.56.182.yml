@@ -1,0 +1,13 @@
+apache_package: apache2
+apache_service: apache2
+apache_template_file: /root/inventory/roles/apache/template/template.j2
+debian11_source_file: /root/inventory/roles/debian-11/template/template.j2
+dns-host-file: /root/inventory/roles/dns-server/template/named.j2
+dns-fw: /root/inventory/roles/dns-server/template/debian.server.fw.j2
+dns-rv: /root/inventory/roles/dns-server/template/debian.server.rv.j2
+tools:
+   - curl
+   - wget
+   - vim
+   - net-tools
+   - lldpd

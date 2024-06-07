@@ -1,0 +1,4 @@
+- name: icinga2 installation
+  hosts: host3 
+  roles:
+     - icinga2

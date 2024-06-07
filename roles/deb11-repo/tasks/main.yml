@@ -1,0 +1,16 @@
+- name: copying source file for debian11
+  template:
+    src: "{{debian11_source_file}}"
+    dest: /etc/apt/sources.list
+- name: debian os update and upgrade
+  apt:
+    upgrade: yes
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 36000
+
+- name: installing imp pkg
+  apt:
+    name: "{{tools}}"
+    state: latest
+

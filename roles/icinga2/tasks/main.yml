@@ -1,0 +1,23 @@
+- name: installing icinga2 dependencies
+  apt:
+   name:
+     - php-gd 
+     - php-mbstring 
+     - php-mysqlnd 
+     - php-curl 
+     - php-xml 
+     - php-cli 
+     - php-soap 
+     - php-intl 
+     - php-xmlrpc 
+     - php-zip  
+     - php-common 
+     - php-opcache 
+     - php-gmp 
+     - php-imagick 
+     - php-pgsql
+   state: latest
+
+
+- name: Modify php.ini settings
+  command: "sed -i 's/memory_limit = .*/memory_limit = 256M/; s/post_max_size = .*/post_max_size = 64M/; s/upload_max_filesize = .*/upload_max_filesize = 100M/; s/max_execution_time = .*/max_execution_time = 300/; s/default_charset = .*/default_charset = \"UTF-8\"/; s/;date.timezone =.*/date.timezone = \"Asia\\/Kolkata\"/; s/;cgi.fix_pathinfo=.*/cgi.fix_pathinfo=0/' /etc/php/7.4/apache2/php.ini"
