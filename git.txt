@@ -1,0 +1,840 @@
+
+https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase#:~:text=What%20is%20git%20rebase%3F,of%20a%20feature%20branching%20workflow.
+
+[root@dns-server ~]# diff -u cal1.txt cal2.txt  (To check what added and removed in old and new file)
+--- cal1.txt    2024-06-07 17:14:55.189000000 +0530
++++ cal2.txt    2024-06-07 17:15:22.231000000 +0530
+@@ -1,8 +1,8 @@
+-      June 2024
++      May 2024
+ Mo Tu We Th Fr Sa Su
+-                1  2
+- 3  4  5  6  7  8  9
+-10 11 12 13 14 15 16
+-17 18 19 20 21 22 23
+-24 25 26 27 28 29 30
++       1  2  3  4  5
++ 6  7  8  9 10 11 12
++13 14 15 16 17 18 19
++20 21 22 23 24 25 26
++27 28 29 30 31
+
+
+
+[root@dns-server ~]# wdiff cal1.txt cal2.txt [ to check differences by words]
+      [-June-]      {+May+} 2024
+Mo Tu We Th Fr Sa Su
+       1  2  3  4  5
+ 6  7  8  9 10 11 12
+13 14 15 16 17 18 19
+20 21 22 23 24 25 26
+27 28 29 30 {+31+}
+
+
+
+[root@dns-server ~]# diff -u original-code fix-code > change.diff [ to generate diff file ]
+
+
+[root@dns-server ~]# patch original-code < change.diff (to patch original-code with change.diff)
+
+
+Version Control System, or VCS. A Version Control System keeps track of
+the changes that we make to our files. By using a VCS, we can know when the
+changes were made and who made them. It also lets us easily revert a change
+if it turned out not to be a good idea. It makes collaboration easier by
+allowing us to merge changes from lots of different sources.
+ 
+VCS keeps track of all the different versions that we create as we save our changes. There are many different version
+control systems, each with their own implementation and with their own
+advantages and disadvantages. But, no matter how the VCS is
+implemented internally, they always access the history of our files.
+ 
+Let us retrieve past versions of the file or directory and see who changed which files, how each file was changed
+and when the file was changed. On top of this, we can make edits to
+multiple files and treat that collection of edits as a single change which is
+commonly known as a commit. 
+A VCS even provides a mechanism to allow the author of a commit to record why the change was made, including what
+bugs, tickets or issues were fixed by the change. This information can be a lifesaver.
+
+A VCS is a key part of managing the code. Files are usually
+organized in repositories which contains separate software projects or just
+group all related code. 
+
+
+Git is a VCS created in 2005 by Linus Torvalds.
+
+
+Creation & Purpose
+
+Created in 2005 by Linus Torvalds, the developer behind the Linux kernel.
+Developed to manage the development of the Linux kernel with geographically distributed programmers.
+
+
+System Characteristics:
+
+Free, open-source system.
+Available on Unix-based platforms, Windows, and macOS.
+Distributed architecture: Every contributor has a full copy of the repository on their development machines.
+Key Features
+
+Distributed Architecture:
+
+Enables fast local operations.
+Allows sharing and pulling in changes without a central server.
+Standalone & Network Capabilities:
+Can be used on a single machine without a network connection.
+Can function as a server to host repositories.
+Can act as a client to access repositories over HTTP, SSH, or Git's protocol.
+
+
+Versatility:
+
+Suitable for small projects (single developer) to large projects (thousands of contributors).
+Can track private work or host code on public servers like GitHub and GitLab.
+
+Usage & Popularity:
+
+One of the most popular version control systems, used in millions of projects.
+Chosen for its popularity, multi-platform support, and robust features.
+Terminology
+
+VCS (Version Control System) and SCM (Source Control Management): Both terms are used interchangeably, but VCS is preferred for its broader applicability beyond source code.
+
+
+Alternative VCS Tools:
+
+Subversion
+Mercurial
+
+
+
+[root@dns-server ~]# git --version
+git version 2.43.0
+
+
+git add file (to add a file in git tracking)
+
+git status (to get information about current branch or working tree)
+
+git commit -m "comment" (to make backup file)
+
+
+
+
+Key Concepts:
+
+
+Configuration:
+
+Set your identity:
+
+git config --global user.email "your.email@example.com"
+git config --global user.name "Your Name"
+The --global flag sets values for all repositories; can set different values for different repositories.
+
+Creating a Repository:
+
+Initialize a new repository:
+
+git init
+
+Clone an existing repository:
+
+git clone <repository_url>
+
+
+Git Directory & Working Tree:
+
+Git Directory: Stores changes and change history.
+View hidden files and directories:
+
+
+ls -la
+View contents of .git directory:
+
+ls -l .git
+
+Working Tree: Current version of the project; contains all files tracked by Git and new untracked files.
+
+
+Tracking Files:
+
+Add files to be tracked:
+ 
+ 
+git add <file>
+Adds files to the staging area.
+
+
+View status:
+ 
+ 
+git status (Shows the state of the working tree and staging area.)
+Committing Changes:
+
+Commit changes:
+ 
+ 
+git commit
+Opens a text editor for the commit message.
+Example message: "Added disk usage script."
+The commit saves changes to the Git directory.
+
+
+Summary:
+
+Basic Commands:
+
+git config --global user.email "your.email@example.com"
+git config --global user.name "Your Name"
+git init
+git clone <repository_url>
+ls -la
+ls -l .git
+git add <file>
+git status
+git commit
+
+
+Key Areas:
+
+Configuration: Identity settings for tracking changes.
+Repository Initialization: Starting or cloning repositories.
+Directory Structure: Understanding Git directory and working tree.
+Tracking and Committing: Adding files to staging area and committing changes.
+
+
+
+Key Sections of a Git Project
+
+Git Directory:
+
+Contains the history of all files and changes.
+Stores snapshots of the project.
+
+Working Tree:
+
+Contains the current state of the project.
+Includes any changes made to files.
+
+Staging Area:
+
+Contains changes marked to be included in the next commit.
+Acts as a preparation area for the next snapshot.
+Understanding Git as Snapshots
+Git represents your project as a series of snapshots.
+Each commit records a new snapshot of the project’s state at that moment.
+Snapshots form the project's history stored in the Git directory.
+Tracking Changes
+
+Tracked Files:
+
+Part of the snapshots.
+Can be in one of three states: modified, staged, or committed.
+
+Untracked Files:
+
+Not part of the snapshots yet.
+Usually new files.
+States of Tracked Files
+
+Modified:
+
+Changes made but not committed.
+Git notices changes but doesn’t store them until staged.
+
+Staged:
+
+Changes marked for inclusion in the next commit.
+Ready to be committed.
+
+Committed:
+
+Changes stored in a snapshot in the Git directory.
+Safely stored in the version control system (VCS).
+Workflow Example
+
+Check Current Status:
+
+List contents:
+ 
+ls -l
+
+Check Git status:
+ 
+git status
+
+Modify a File:
+
+Make changes to a file (e.g., add periods to a script's output).
+
+Check status again:
+ 
+git status
+File marked as modified, not staged for commit.
+
+Stage Changes:
+
+Add file to staging area:
+ 
+git add <file>
+Commit Changes:
+
+Commit with a message:
+ 
+git commit -m "Added periods to the end of sentences"
+Creates a new snapshot in the Git directory.
+
+Verify Status:
+
+Check status:
+ 
+git status
+
+No changes to commit, working tree clean.
+
+Summary of Workflow
+Work on Modified Files:
+Modify files in the working tree.
+
+Stage Files:
+
+Use git add to move changes to the staging area.
+
+
+Commit Changes:
+
+Use git commit to create a snapshot and store it in the Git directory.
+
+
+git config -l (to list current git config)
+
+
+git commit -a -m "commit message" (add and commit at once)
+
+
+
+Key Git Concepts
+
+Git Directory: Contains the history of all files and changes.
+Working Tree: Contains the current state of the project.
+Staging Area: Contains changes marked to be included in the next commit.
+File States in Git
+Untracked: Newly added files not yet tracked by Git.
+Modified: Files that have been changed but not yet staged.
+Staged: Files that have been marked for inclusion in the next commit.
+Committed: Changes have been saved to the Git directory.
+Setting Up a Git Repository
+Create a Directory:
+ 
+mkdir scripts
+
+cd scripts
+
+Initialize a Git Repository:
+ 
+git init
+
+Configuring Git
+
+Check Configuration:
+ 
+git config -l
+
+Set User Information:
+ 
+git config --global user.email "your.email@example.com"
+git config --global user.name "Your Name"
+
+Working with Files
+Create a File:
+Create a new Python script.
+Make the File Executable:
+ 
+chmod +x script.py
+
+Git Commands for Tracking and Committing Changes
+Check Repository Status:
+ 
+git status
+
+Add a New File to Staging Area:
+ 
+git add <file>
+
+Commit Staged Changes:
+Using a Text Editor:
+ 
+git commit
+
+Directly from Command Line:
+ 
+git commit -m "Commit message"
+
+Example Workflow
+Check Current Status:
+ 
+git status
+
+Modify a File:
+Add or change content in the file.
+Stage the Modified File:
+ 
+git add <file>
+
+Commit the Changes:
+Using a Commit Message:
+ 
+git commit -m "Added new function"
+
+Practical Example
+Create a Basic Script:
+
+python
+ #!/usr/bin/env python3
+
+def main():
+    pass
+
+if __name__ == "__main__":
+    main()
+
+Make the Script Executable:
+ 
+chmod +x all_checks.py
+Check Status:
+ 
+git status
+
+Stage the Script:
+ 
+git add all_checks.py
+
+Commit the Script:
+ 
+git commit -m "Create an empty all_checks.py file"
+
+Modifying an Existing File
+Add Functionality:
+
+python
+ import os
+
+def check_reboot():
+    return os.path.exists("/run/reboot-required")
+Check Status:
+ 
+git status
+
+Stage the Changes:
+ 
+git add all_checks.py
+
+Commit the Changes:
+ 
+git commit -m "Added check_reboot function"
+ 
+ 
+Summary of Git Workflow
+Modify Files: Work on files in the working tree.
+Stage Changes: Use git add to move changes to the staging area.
+Commit Changes: Use git commit to save changes in the Git directory.
+
+
+
+
+[root@dns-server inventory]# git log (to get commit history)
+
+
+commit a5b228db508dcef21a317de847c399e0a0b6ad9d (HEAD -> master, origin/master)
+Author: Shubham Shukla <shubhamshuklaxii@gmail.com>
+Date:   Fri Jun 7 21:18:19 2024 +0530
+
+    removed c.txt
+
+commit 350a3b70c8cfe355441749e5c71f7299ba6a6a9c
+Author: Shubham Shukla <shubhamshuklaxii@gmail.com>
+Date:   Fri Jun 7 20:59:40 2024 +0530
+
+    adding cal
+	
+
+Study guide: Git
+
+In any Git project, there are three sections: the Git directory, the working tree, and the staging area. This study guide provides some basic concepts and commands that can help you get started with Git as well as guidelines to help you write an effective commit message.
+
+Git config command
+
+The Git config command is used to set the values to identify who made changes to Git repositories. To set the values of user.email and user.name to your email and name, type: 
+
+: ~$ git config  - -global user.email “me@example.com
+”
+
+: ~$ git config  - -global user.name “My name”
+
+Git init command
+: ~/checks$ git init
+
+The Git init command can create a new empty repository in a current directory or re-initialize an existing one. 
+
+Git ls -la command
+: ~/checks$ ls -la
+
+The Git ls - la command checks that an identified directory exists.
+
+: ~/checks$ ls -l .git/
+
+The ls-l.git command checks inside the directory to see the different things that it contains. This is called the Git directory. The Git directory is a database for your Git project that stores the changes and the change history.
+
+Git add command
+:~/checks$ git add disk_usage.py
+
+Using the Git add command allows Git to track your file and uses the selected file as a parameter when adding it to the staging area. The staging area is a file maintained by Git that contains all the information about what files and changes are going to go into your next commit.
+
+Git status command
+:~/checks$ git status
+
+The Git status command is used to get some information about the current working tree and pending changes.
+
+Git commit command
+:~/checks$ git commit
+
+The .git commit command is run to remove changes made from the staging area to the .git directory. When this command is run, it tells Git to save changes. A text editor is opened that allows a commit message to be entered.
+
+Guidelines for writing commit messages
+A commit message is generally broken into two sections: a short summary and a description of the changes. When the git commit command is run, Git will open a text editor to write your commit message. A good commit message includes the following:
+
+Summary: The first line contains the summary, formatted as a header, containing 50 characters or less. 
+
+Description: The description is usually kept under 72 characters and provides detailed information about the change. It can include references to bugs or issues that will be fixed with the change. It also can include links to more information when relevant. 
+
+Click the link to review an example of a commit message: 
+https://commit.style/
+ 
+
+Key takeaways
+Knowing basic Git commands and guidelines for writing better messages can help you get started with Git as well as better communicate with others.
+
+
+
+
+
+
+
+
+git -a -m "modified a file which was already tracked, however if we can to make a file tracked we need to use git add"
+
+
+git log -u (check changes by lines)
+
+git show commit-id (it will show commit with it's associated patch)
+
+
+git log --stat (it shows stats about commit with patches, what added and remove)
+
+git diff (see what changes have been made)
+
+git add -p (to print changes during making file tracked by git)
+
+git rm (to remove file)
+
+git mv (to rename file)
+
+.gitignore (to ignore file)
+
+
+Study guide: Advanced Git
+
+Command
+
+Explanation & Link
+
+git commit -a
+
+$ git commit -a
+ automatically stages the files that have been locally modified. New files which have not been published yet are not affected.
+
+git log -p
+
+$ git log -p
+ produces patch text that displays the lines of code that were changed in each commit in the current repo. 
+
+
+git show
+
+$ git show
+ shows you one or more object(s) such as blobs, trees, tags, and commits.
+
+git diff
+
+$ git diff
+ is similar to the Linux `diff` command, and can show the changes between commits, changes between the working tree and index, changes between two trees, changes from a merge, and so on.
+
+git diff --staged
+
+$ git diff --staged
+ is an alias of $ git diff --cached, which  shows all staged files compared to the named commit.
+
+git add -p
+
+$ git add -p
+ allows a user to interactively review patches before adding to the current commit.
+
+git mv
+
+$ git mv
+ is similar to the Linux `mv` command. This command can move or rename a file, directory, or symlink.
+
+git rm
+
+$ git rm 
+is similar to the Linux `rm` command. This command deletes or removes a file from the working tree.
+
+There are many useful git command summaries online as well. Please take some time to research and study a few, such as 
+this one
+.
+
+.gitignore files
+.gitignore files are used to tell the git tool to intentionally ignore some files in a given Git repository. For example, this can be useful for configuration files or metadata files that a user may not want to check into the master branch. 
+
+When writing a .gitignore file, there are some specific formats which help tell Git how to read the text in the file. For example, a line starting with # is a comment; a slash / is a directory separator. Visit
+ https://git-scm.com/docs/gitignore
+ to see more examples.
+
+This GitHub repository
+ offers some examples of configurations which are often included in a .gitignore file. These examples include: compiled sources, packages, logs, databases, and OS generated files.
+
+
+git checkout file-name (to restore file with it's older version)
+
+git reset HEAD file-name (to make file from untracked)
+
+git commit --amend (to include new changes and rewrite previous commit) 
+
+Note: we should avoid git commit --amend if commit is already made public.
+
+
+git revert HEAD (to revert latest commit, It creates a new commit with inverse changes.)
+
+
+
+When writing and committing code, making mistakes is a common occurrence. Thankfully, there are multiple ways for you to revert or undo your mistakes. Take a look at the helpful commands below.
+
+git checkout
+ is used to switch branches. For example, you might want to pull from your main branch. In this case, you would use the command git checkout main. This will switch to your main branch, allowing you to pull. Then you could switch to another branch by using the command  git checkout <branch>.
+
+git reset
+  can be somewhat difficult to understand. Say you have just used the command git add. to stage all of your changes, but then you decide that you are not ready to stage those files. You could use the command git reset to undo the staging of your files.
+
+There are some other useful articles online, which discuss more aggressive approaches to
+ resetting the repo
+ (Git repository). As discussed in this article, doing a hard reset can be extremely dangerous. With a hard reset, you run the risk of losing your local changes. There are safer ways to achieve the same effect. For example, you could run git stash, which will temporarily shelve or stash your current changes. This way, your current changes are kept safe, and you can come back to them if needed.
+
+git commit --amend
+ is used to make changes to your most recent commit after-the-fact, which can be useful for making notes about or adding files to your most recent commit. Be aware that this git --amend command rewrites and replaces your previous commit, so it is best not to use this command on a published commit.
+
+git revert
+ makes a new commit which effectively rolls back a previous commit. Unlike the git reset command which rewrites your commit history, the git revert command creates a new commit which undoes the changes in a specific commit. Therefore, a revert command is generally safer than a reset command.
+
+For more information on these and other methods to undo something in Git, checkout this 
+Git Basics - Undoing Things
+ article.
+
+Additionally, there are some interesting considerations about how git object data is stored, such as the usage of SHA-1.
+
+SHA-1 is what’s known as a hash function, a cryptographic function that generates a digital fingerprint of a file. Theoretically, it’s impossible for two different files to have the same SHA-1 hash, which means that SHA-1 can be used for two things:
+
+Confirming that the contents of a file have not changed (digital signature).
+
+Serving as an identifier for the file itself (a token or fingerprint).
+
+Git calculates a hash for every commit. Those hashes are displayed by commands like git log or in various pages on Github. For commands like git revert, you can then use the hash to refer to a specific commit.
+
+Feel free to read more here:
+
+SHA-1 collision detection on GitHub.com
+
+Even the most accomplished developers make mistakes in Git. It happens to everyone, so don’t stress about it. You have these and other methods to help you revert or undo your mistakes.
+
+
+
+
+Study guide: Git branches and merging
+
+
+A branch at the most basic level is just a pointer to a particular commit.
+But more importantly, it represents an independent line of development in a project. 
+Of which the commit it points to is the latest link in a chain of developing history. 
+The default branch that Git creates for you when a new repository initialized is called master.
+
+Command
+
+Explanation & link
+
+git branch
+
+ 
+$ git branch
+ can be used to list, create, or delete branches.
+
+git branch <name>
+
+$ git branch <name>
+ can be used to create a new branch in your repository. 
+
+git branch -d <name>
+
+$ git branch -d <name>
+ can be used to delete a branch from your repository.
+
+git branch -D <name>
+
+$ git branch -D <branch>
+ forces a branch to be deleted.
+
+git checkout <branch>
+
+$ git checkout <branch>
+ switches your current working branch.
+
+git checkout -b <new-branch>
+
+$ git checkout -b <new-branch>
+ creates a new branch and makes it your current working branch.
+
+git switch branchname
+
+$ git switch branchname
+ can be used to switch branch in your repository. 
+ 
+ 
+Merging is the term that git uses for combining branch data and history together. 
+
+git merge <branch>
+
+$ git merge <branch>
+ joins changes from one branch into another branch.
+
+git merge --abort
+
+ 
+$ git merge --abort
+ can only be used after merge conflicts. This command will abort the merge and try to go back to the pre-merge state.
+
+git log --graph 
+
+$ git log --graph 
+prints an ASCII graph of the commit and merge history.
+
+git log --oneline
+
+$ git log --oneline
+ prints each commit on a single line.
+
+Keep this table handy while you are getting comfortable using Git branches and merging. Now, it’s time to put your newfound knowledge of Git branches and merging to use!
+
+
+
+
+
+
+There are various remote repository hosting sites:
+
+GitHub
+
+BitBucket
+
+Gitlab
+.
+
+Follow the workflow at 
+https://github.com/join
+ to set up a free account, username, and password. After that, 
+these steps
+ will help you create a brand new repository on GitHub.
+
+Some useful commands for getting started:
+
+Command
+
+Explanation & Link
+
+git clone URL
+
+Git clone is used to clone a remote repository into a local workspace
+
+git push
+
+Git push is used to push commits from your local repo to a remote repo
+
+git pull
+
+Git pull is used to fetch the newest updates from a remote repository
+
+
+This can be useful for keeping your local workspace up to date.
+
+https://help.github.com/en/articles/caching-your-github-password-in-git
+
+https://help.github.com/en/articles/generating-an-ssh-key
+  
+  
+Study guide: Git Remotes
+You’ve learned about what a remote is, working with remotes, fetching new changes, and updating the local repository. Use this study guide as an easy reference of Git commands for working with remotes. This study guide gives a brief explanation of these useful commands along with a link to the Git documentation for each command. Keeping study guides like this one easily accessible can help you code more efficiently.
+
+Command
+
+Explanation & Links
+
+git remote 
+
+$ git remote
+ allows you to manage the set of repositories or “remotes” whose branches you track.
+
+git remote -v
+
+$ git remote -v
+ is similar to $ git remote, but adding the -v shows more information such as the remote URL.
+
+git remote show <name>
+
+$ git remote show <name>
+ shows some information about a single remote repo.
+
+git remote update
+
+$ git remote update
+ fetches updates for remotes or remote groups.
+
+git fetch
+
+$ git fetch
+ can download objects and refs from a single repo, a single URL, or from several repositories at once.
+
+git branch -r
+
+$ git branch -r
+ lists remote branches and can be combined with other branch arguments to manage remote branches.
+ 
+ 
+ 
+ Study guide: Conflict resolution
+ 
+ 
+In Git, merge conflicts, or conflicts that occur when merged branches have competing commits, are not uncommon when working with a team of developers or when working with open-source software. This study guide provides you with tips for resolving merge conflicts. 
+
+Tips for resolving merge conflicts
+Here are some tips to keep in mind when you’re resolving merge conflicts: 
+
+After running Git merge, a message will appear informing that a conflict occurred on the file.
+
+Read the error messages that imply you cannot push your local changes to GitHub, especially the remote changes with Git pull. 
+
+Use the command line or GitHub Desktop to push the change to your branch on GitHub after you make a local clone of the repository for all other types of merge conflicts. 
+
+Before merging any commits to the master branch, push it into a remote repository so that collaborators can view the code, test it, and inform you that it’s ready for merging. 
+
+Use the Git rebase command to replay the new commits on top of the new base and then merge the feature branch back into the master.
+
+Key takeaways
+It is important to effectively resolve merge conflicts because local changes cannot be made to Git until the merge conflicts have been locally resolved. Once all conflicts have been resolved, changes can be pushed to Git and merged in a pull request.
