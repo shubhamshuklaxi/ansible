@@ -1,0 +1,123 @@
+- name: Downloading prometheus
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v2.53.0/prometheus-2.53.0.linux-amd64.tar.gz
+    dest: /root/
+
+- name: Extracting prometheus-2.53.0.linux-amd64.tar.gz
+  ansible.builtin.unarchive:
+    src: /root/prometheus-2.53.0.linux-amd64.tar.gz
+    dest: /root/
+    remote_src: yes
+
+- name: Copy files from foo to bar
+  ansible.builtin.copy:
+    src: /root/prometheus-2.53.0.linux-amd64/ 
+    dest: /root/prometheus-files/
+    remote_src: yes
+
+
+- name: Creating prometheus user
+  ansible.builtin.user:
+    name: prometheus
+    shell: /bin/false
+    create_home: no
+
+- name: Creating a prometheus dir in etc
+  ansible.builtin.file:
+    path: /etc/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+
+- name: Creating a prometheus dir in /var/lib/
+  ansible.builtin.file:
+    path: /var/lib/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+
+- name: Copying files /root/prometheus-files/prometheus to /usr/local/bin/
+  ansible.builtin.copy:
+    src: /root/prometheus-files/prometheus
+    dest: /usr/local/bin/
+    remote_src: yes
+
+
+- name: Copying files /root/prometheus-files/promtool to /usr/local/bin/
+  ansible.builtin.copy:
+    src: /root/prometheus-files/promtool
+    dest: /usr/local/bin/
+    remote_src: yes
+
+- name: changing onwer and group
+  ansible.builtin.file:
+    path: /usr/local/bin/prometheus
+    owner: prometheus
+    group: prometheus
+    mode: 0766
+
+- name: changing onwer and group
+  ansible.builtin.file:
+    path: /usr/local/bin/promtool
+    owner: prometheus
+    group: prometheus
+
+- name: Copying files /root/prometheus-files/consoles to /etc/prometheus
+  ansible.builtin.copy:
+    src: /root/prometheus-files/consoles
+    dest: /etc/prometheus
+    force: yes
+    remote_src: yes
+
+ 
+- name: Copying files /root/prometheus-files/console_libraries to /etc/prometheus
+  ansible.builtin.copy:
+    src: /root/prometheus-files/console_libraries
+    dest: /etc/prometheus
+    force: yes
+    remote_src: yes
+
+- name: changing onwer and group
+  ansible.builtin.file:
+    path: /etc/prometheus/consoles
+    owner: prometheus
+    group: prometheus
+    force: yes
+
+
+- name: changing onwer and group
+  ansible.builtin.file:
+    path: /etc/prometheus/console_libraries
+    owner: prometheus
+    group: prometheus
+    force: yes
+    
+- name: Creating config for prometheus
+  ansible.builtin.template:
+    src: "{{prometheus_config}}"
+    dest: /etc/prometheus/prometheus.yml
+
+- name: changing onwer and group
+  ansible.builtin.file:
+    path: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+
+- name: Creating systemd service
+  ansible.builtin.template:
+    src: "{{systemd_config}}"
+    dest: /etc/systemd/system/prometheus.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Just force systemd to reread configs (2.4 and above)
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: "Starting prometheus service"
+  service:
+    name: prometheus
+    state: started
+
+

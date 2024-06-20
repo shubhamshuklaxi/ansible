@@ -11,3 +11,6 @@ tools:
    - vim
    - net-tools
    - lldpd
+
+prometheus_config: /root/inventory/roles/prometheus/template/prometheus.j2
+systemd_config: /root/inventory/roles/prometheus/template/systemd.j2
