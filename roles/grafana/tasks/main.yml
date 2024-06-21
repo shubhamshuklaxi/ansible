@@ -1,0 +1,16 @@
+- name: downloading grafana deb package
+  ansible.builtin.get_url:
+    url: https://dl.grafana.com/enterprise/release/grafana-enterprise_11.0.0_amd64.deb
+    dest: /root/
+
+
+- name: Install grafan
+  ansible.builtin.apt:
+    deb: /root/grafana-enterprise_11.0.0_amd64.deb
+    state: present
+
+- name: Starting grafana service
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: true
