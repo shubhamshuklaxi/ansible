@@ -14,3 +14,5 @@ tools:
 
 prometheus_config: /root/inventory/roles/prometheus/template/prometheus.j2
 systemd_config: /root/inventory/roles/prometheus/template/systemd.j2
+node: /root/inventory/roles/node-exporter/template/node.j2
+
