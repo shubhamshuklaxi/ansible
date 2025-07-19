@@ -1,0 +1,181 @@
+- name: debian os update and upgrade
+  apt:
+    upgrade: yes
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 36000
+  become: true
+
+- name: Install containerd httpd (state=present is optional)
+  ansible.builtin.apt:
+    name: containerd
+    state: present
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
+
+- name: Making changes in containerd config file
+  ansible.builtin.shell:
+    cmd: "containerd config default | sudo tee /etc/containerd/config.toml > /dev/null && \ sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml"
+  ignore_errors: yes
+  become: true
+
+- name: Enabling containerd service
+  ansible.builtin.systemd:
+    name: containerd
+    state: started
+    enabled: true
+  become: true
+
+
+- name: Restarting containerd service
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+    enabled: true
+  become: true
+
+- name: updating apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+  become: true
+
+
+- name: Download Kubernetes APT key
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
+    dest: /tmp/kubernetes-apt-key.asc
+    mode: '0644'
+  become: true
+
+- name: Convert APT key to keyring format
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-apt-key.asc
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  become: true
+
+
+- name: Clean up temporary key file
+  ansible.builtin.file:
+    path: /tmp/kubernetes-apt-key.asc
+    state: absent
+  become: true
+
+- name: Add Kubernetes APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=arm64 signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /"
+    state: present
+  become: true
+
+- name: Update APT cache after adding Kubernetes repository
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true
+- name: Install Kubernetes components
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+  become: true
+
+- name: Hold Kubernetes packages at current version
+  ansible.builtin.command:
+    cmd: apt-mark hold "{{ item }}"
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+  become: true
+  when: ansible_facts.packages is defined
+
+
+
+
+- name: Load overlay and br_netfilter modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  loop:
+    - overlay
+    - br_netfilter
+  become: true
+
+- name: Ensure net.bridge.bridge-nf-call-iptables is enabled
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    state: present
+    reload: yes
+  become: true
+
+- name: Ensure net.ipv4.ip_forward is enabled
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    reload: yes
+  become: true
+
+
+
+- name: Initialize Kubernetes cluster
+  ansible.builtin.command:
+    cmd: kubeadm init --pod-network-cidr=192.168.64.0/24
+    creates: /etc/kubernetes/admin.conf
+  become: true
+- name: Ensure .kube directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_env.USER }}"
+    group: "{{ ansible_env.USER }}"
+  become: true
+
+- name: Copy admin.conf to kubeconfig location
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    owner: "{{ ansible_env.USER }}"
+    group: "{{ ansible_env.USER }}"
+    mode: '0600'
+    remote_src: yes
+  become: true
+
+
+- name: Install Calico CNI plugin
+  ansible.builtin.command:
+    cmd: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  become: true
+
+
+
+- name: Print Join Command for k8s-clients
+  shell: kubeadm token create --print-join-command
+  register: command_output
+  become: true
+- debug:
+         var: command_output.stdout_lines
+
+- name: copy the output to a local file
+  copy:
+    content: "{{ command_output.stdout }}"
+    dest: "/home/ubuntu/ansible/k8s-join-command"
+  delegate_to: localhost

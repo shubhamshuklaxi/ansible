@@ -1,0 +1,6 @@
+- name: Installing Aerospike
+  hosts: host
+  become: true
+  roles:
+     - aerospike
+  
