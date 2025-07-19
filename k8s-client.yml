@@ -1,0 +1,6 @@
+- name: Installing k8s
+  hosts: k8s-clients
+  become: true
+  roles:
+     - k8s-client
+  

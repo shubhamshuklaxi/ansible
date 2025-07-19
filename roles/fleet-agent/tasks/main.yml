@@ -1,0 +1,57 @@
+- name: debian os update and upgrade
+  apt:
+    upgrade: yes
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 36000
+  become: true
+
+- name: "coping certs file"
+  template:
+         src: "{{certs_template_file}}"
+         dest: /etc/ssl/certs/server1.fleet.local.crt
+         owner: root
+         group: root
+         mode: 0644
+  become: true
+
+- name: Adding host entries for fleet server
+  ansible.builtin.shell:
+    cmd: "echo '192.168.64.14 server1.fleet.local' >> /etc/hosts"
+  ignore_errors: yes
+  become: true
+
+- name: Downloading fleet-agent
+  ansible.builtin.get_url:
+    url: https://github.com/fleetdm/fleet/releases/download/fleet-v4.69.0/fleetctl_v4.69.0_linux_arm64.tar.gz
+    dest: /home/ubuntu/
+  become: true
+
+- name: Extracting fleetctl_v4.69.0_linux_arm64.tar.gz
+  ansible.builtin.unarchive:
+    src: /home/ubuntu/fleetctl_v4.69.0_linux_arm64.tar.gz
+    dest: /home/ubuntu/
+    remote_src: yes
+  become: true
+
+- name: "coping fleetctl file in /usr/bin/"
+  copy:
+        src: /home/ubuntu/fleetctl_v4.69.0_linux_arm64/fleetctl
+        dest: /usr/bin
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: yes
+  become: true
+
+- name: Download fleetd package
+  ansible.builtin.shell:
+    cmd: "fleetctl package --type=deb --arch=arm64 --enable-scripts --fleet-desktop --fleet-url=https://server1.fleet.local:4443 --enroll-secret=+UJg7jQK3Vrd/L6h7oY8TQ6C9aktly4x --fleet-certificate=/etc/ssl/certs/server1.fleet.local.crt"
+  ignore_errors: yes
+  become: true
+
+- name: verifying pakage
+  command:
+       cmd: "dpkg --install /home/ubuntu/fleet-osquery_1.43.0_arm64.deb"
+  ignore_errors: yes
+  become: true

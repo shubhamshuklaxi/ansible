@@ -1,0 +1,6 @@
+- name: adding deb repo
+  hosts: host2
+  become: true
+  roles:
+     - fleet-agent
+  

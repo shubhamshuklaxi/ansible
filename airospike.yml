@@ -1,0 +1,6 @@
+- name: installing airospike
+  hosts: host2
+  become: true
+  roles:
+     - airospike
+  
